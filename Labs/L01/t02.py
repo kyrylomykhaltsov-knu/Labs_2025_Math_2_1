@@ -152,3 +152,4 @@ if __name__ == "__main__":
     process_shapes_from_file("input01.txt")
     # process_shapes_from_file("input02.txt")
     # process_shapes_from_file("input03.txt")
+    # process_shapes_from_file("input03.txt")
