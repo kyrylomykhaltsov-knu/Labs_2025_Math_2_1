@@ -1,151 +1,252 @@
-import turtle
+from turtle import *
+import time
 import random
 
-
-# ==========================================
-# ЧАСТИНА 1: БАЗОВИЙ КЛАС
-# ==========================================
-
 class Figure:
-    """
-    Базовий клас для всіх геометричних фігур.
-    Реалізує загальну логіку позиціонування, кольору та переміщення.
-    """
+    """ Клас Фігура """
 
-    def __init__(self, x, y, color="black"):
-        self.x = x  # Координата X (базова точка фігури)
-        self.y = y  # Координата Y (базова точка фігури)
-        self.color = color  # Колір малювання
-        self.is_visible = False  # Прапорець: чи намальована фігура зараз на екрані
-        self.bg_color = "white"  # Колір фону екрану (для "стирання" фігури)
+    def __init__(self, x, y, color):
+        """ Конструктор
 
-    def set_color(self, color):
-        """Встановлює новий колір для фігури"""
-        self.color = color
+        :param x: координата x положення фігури
+        :param y: координата y положення фігури
+        :param color: колір фігури
+        """
+        self._x = x  # _x - координата x
+        self._y = y  # _y - координата y
+        self._visible = False  # _visible - чи є фіруга видимою на екрані
+        self._color = color    # _color - колір фігури
 
-    def draw(self):
-        """Зображує фігуру, якщо її ще немає на екрані"""
-        if not self.is_visible:  # Перевіряємо, чи фігура вже не намальована
-            turtle.color(self.color)  # Встановлюємо колір черепашки
-            self._draw_shape()  # Викликаємо метод малювання конкретної форми (поліморфізм)
-            self.is_visible = True  # Оновлюємо статус: фігура на екрані
+    def _draw(self, color):
+        """ Допоміжний віртуальний метод, що зображує фігуру заданим кольором
+        Тут здійснюється лише декларація методу, а конкретна
+        реалізація буде здійснюватися у конкретних нащадках
+        :param color: колір
+        """
+        pass
 
-    def erase(self):
-        """Стирає фігуру, малюючи її кольором фону"""
-        if self.is_visible:  # Стираємо лише якщо фігура намальована
-            turtle.color(self.bg_color)  # Змінюємо колір на колір фону
-            self._draw_shape()  # Малюємо фігуру поверх старої (ховаємо її)
-            self.is_visible = False  # Оновлюємо статус: фігури немає на екрані
+    def show(self):
+        """ Зображує фігуру на екрані """
+        if not self._visible:
+            self._visible = True
+            self._draw(self._color)
+
+    def hide(self):
+        """ Ховає фігуру (робить її невидимою на екрані) """
+        if self._visible:
+            self._visible = False
+            # щоб сховати фігуру, потрібно
+            # зобразити її кольором фону.
+            self._draw(bgcolor())
 
     def move(self, dx, dy):
-        """Переміщує фігуру на задані зміщення dx та dy"""
-        was_visible = self.is_visible  # Запам'ятовуємо, чи була фігура видимою
-        if was_visible:
-            self.erase()  # Якщо так, стираємо її зі старої позиції
-
-        self.x += dx  # Змінюємо координату X
-        self.y += dy  # Змінюємо координату Y
-
-        if was_visible:
-            self.draw()  # Малюємо на новій позиції, якщо вона була видимою раніше
-
-    def _draw_shape(self):
+        """ Переміщує об'єкт
+        :param dx: зміщення у пікселях по осі X
+        :param dy: зміщення у пікселях по осі Y
         """
-        Абстрактний метод. Логіка малювання специфічної форми.
-        Повинен бути реалізований у кожному класі-нащадку.
-        """
-        pass  # Заглушка. Базовий клас не знає, яку форму малювати.
+        isVisible = self._visible
+        if isVisible:
+            self.hide()
+        self._x += dx
+        self._y += dy
+        if isVisible:
+            self.show()
 
 
-# ==========================================
-# ЧАСТИНА 2: КЛАСИ-НАЩАДКИ (ФОРМИ)
-# ==========================================
-
+######################  клас Circle  ###########################
+################################################################
 class Circle(Figure):
-    def __init__(self, x, y, radius, color="black"):
-        super().__init__(x, y, color)  # Виклик конструктора базового класу
-        self.radius = radius  # Додаємо специфічне поле - радіус
+    """ Клас Коло """
 
-    def _draw_shape(self):
-        # Позиція для кола - це його центр. Але turtle.circle() малює від нижньої точки.
-        # Тому ми опускаємо черепашку вниз на відстань радіуса перед малюванням.
-        turtle.penup()
-        turtle.goto(self.x, self.y - self.radius)
-        turtle.pendown()
+    def __init__(self, x, y, r, color):
+        """ Конструктор
+        Ініціалізує положення кола, його радіус і колір
+        :param x: координата x центру кола
+        :param y: координата y центру кола
+        :param r: радіус кола
+        :param color: колір кола
+        """
+        super().__init__(x, y, color)  # Обов’язковий виклик конструктора базового класу
+        self._r = r  # _r - радіус кола
 
-        turtle.begin_fill()  # Починаємо заливку
-        turtle.circle(self.radius)  # Малюємо коло
-        turtle.end_fill()  # Завершуємо заливку
+    def _draw(self, color):
+        """ Допоміжний метод, що зображує коло заданим кольором
+        :param color: колір
+        """
+        pencolor(color)
+        pensize(10)
+        up()
+        # малює починаючи знизу кола
+        setpos(self._x, self._y - self._r)
+        down()
+        circle(self._r)
+        up()
 
+
+#################### клас Quadrate  ############################
+################################################################
+
+class Quadrate(Figure):
+    """ Клас Квадрат """
+
+    def __init__(self, x, y, a, color):
+        """ Конструктор
+        Ініціалізує положення лівого нижнього кута квадрата,
+        довжину його сторони і колір.
+        :param x: координата x лівого нижнього кута квадрата
+        :param y: координата y лівого нижнього кута квадрата
+        :param a: довжина сторони квадрата
+        :param color: колір квадрата
+        """
+        super().__init__(x, y, color)  # виклик конструктора базового класу
+        self._a = a  # _a - довжина сторони квадрата
+
+    def _draw(self, color):
+        """ Реалізація малювання квадрата """
+        pencolor(color)  # Встановлюємо колір пензля
+        up()  # Піднімаємо пензель
+        setpos(self._x, self._y)  # Йдемо в початкову точку (лівий нижній кут)
+        down()  # Опускаємо пензель
+
+        for _ in range(4):  # Цикл для малювання 4 однакових сторін
+            forward(self._a)  # Малюємо лінію вперед на довжину сторони
+            left(90)  # Повертаємо ліворуч на 90 градусів
+
+        up()  # Піднімаємо пензель
+
+#################### клас Triangle  ############################
+################################################################
 
 class Triangle(Figure):
-    # Рівносторонній трикутник. Позиція (x,y) - лівий нижній кут.
-    def __init__(self, x, y, side, color="black"):
-        super().__init__(x, y, color)
-        self.side = side
+    """ Клас Трикутник
 
-    def _draw_shape(self):
-        turtle.penup()
-        turtle.goto(self.x, self.y)  # Йдемо в лівий нижній кут
-        turtle.pendown()
+    Використовується для зображення правильного трикутника на екрані
+    """
 
-        turtle.begin_fill()
-        for _ in range(3):  # Цикл для 3-х сторін
-            turtle.forward(self.side)  # Малюємо сторону
-            turtle.left(120)  # Повертаємо на 120 градусів (зовнішній кут рівностороннього трикутника)
-        turtle.end_fill()
+    def __init__(self, x, y, a, color):
+        """ Конструктор правильного (рівностороннього) трикутника """
+        super().__init__(x, y, color)  # Виклик конструктора базового класу
+        self._a = a                    # Зберігаємо довжину сторони трикутника
 
+    def _draw(self, color):
+        """ Реалізація малювання трикутника """
+        pencolor(color)  # Встановлюємо колір пензля
+        up()  # Піднімаємо пензель
+        setpos(self._x, self._y)  # Переміщуємося в ліву нижню вершину
+        down()  # Опускаємо пензель
+
+        for _ in range(3):  # Цикл для 3 сторін
+            forward(self._a)  # Рухаємося вперед на довжину сторони
+            left(120)  # Повертаємо на 120 градусів (зовнішній кут правильного трикутника)
+
+        up()  # Піднімаємо пензель
+
+#################### клас Trapezoid  ###########################
+################################################################
+
+class Trapezoid(Figure):
+    """ Клас Трапеція
+
+    Використовується для зображення рівнобічної трапеції на екрані
+    """
+
+    def __init__(self, x, y, a, b, color):
+        """ Конструктор рівнобічної трапеції """
+        super().__init__(x, y, color)  # Виклик конструктора базового класу
+        self._a = a                    # Більша (нижня) основа трапеції
+        self._b = b                    # Менша (верхня) основа трапеції
+        # Оскільки висота не передана в аргументах, умовно візьмемо її рівною меншій основі (b)
+        self._h = b
+
+    def _draw(self, color):
+        pencolor(color)  # Встановлюємо колір
+        up()  # Піднімаємо пензель
+        setpos(self._x, self._y)  # Стаємо в лівий нижній кут
+        down()  # Опускаємо пензель
+        fillcolor("powder blue")
+        # Обчислюємо горизонтальний відступ для верхніх вершин, щоб трапеція була симетричною (рівнобічною)
+        offset = (self._a - self._b) / 2
+        begin_fill()
+        # Замість поворотів, зручніше малювати трапецію по точках-координатах:
+        goto(self._x + self._a, self._y)  # Малюємо нижню основу (в правий нижній кут)
+        goto(self._x + self._a - offset, self._y + self._h)  # Малюємо праву бічну сторону (в правий верхній кут)
+        goto(self._x + offset, self._y + self._h)  # Малюємо верхню основу (в лівий верхній кут)
+        goto(self._x, self._y)  # Малюємо ліву бічну сторону (повертаємось на старт)
+        end_fill()
+        up()  # Піднімаємо пензель
+
+
+#################### клас Rectangle  ###########################
+################################################################
 
 class Rectangle(Figure):
-    # Прямокутник. Позиція (x,y) - лівий нижній кут.
-    def __init__(self, x, y, width, height, color="black"):
-        super().__init__(x, y, color)
-        self.width = width
-        self.height = height
+    """ Клас Прямокутник
 
-    def _draw_shape(self):
-        turtle.penup()
-        turtle.goto(self.x, self.y)
-        turtle.pendown()
+    Використовується для зображення прямокутника на екрані
+    """
 
-        turtle.begin_fill()
-        for _ in range(2):  # Малюємо 2 пари сторін
-            turtle.forward(self.width)
-            turtle.left(90)
-            turtle.forward(self.height)
-            turtle.left(90)
-        turtle.end_fill()
+    def __init__(self, x, y, a, b, color):
+        """ Конструктор Прямокутника """
+        super().__init__(x, y, color)  # Виклик конструктора базового класу
+        self._a = a  # Довжина (одна сторона)
+        self._b = b  # Висота (суміжна сторона)
+
+    def _draw(self, color):
+        pencolor(color)  # Встановлюємо колір
+        up()  # Піднімаємо пензель
+        setpos(self._x, self._y)  # Переходимо в лівий нижній кут
+        down()  # Опускаємо пензель
+        pensize(5)
+        fillcolor("red")
+        begin_fill()
+        for _ in range(2):  # Цикл виконується двічі (для двох пар сторін)
+            forward(self._a)  # Малюємо довжину
+            left(90)  # Повертаємо на 90 градусів
+            forward(self._b)  # Малюємо висоту
+            left(90)  # Повертаємо на 90 градусів
+        end_fill()
+        up()  # Піднімаємо пензель
 
 
-class Square(Rectangle):
-    # Квадрат успадковує Прямокутник.
-    # Його ширина і висота однакові, тому в конструкторі ми приймаємо лише side.
-    def __init__(self, x, y, side, color="black"):
-        super().__init__(x, y, side, side, color)  # Передаємо side і як width, і як height у Rectangle
+################################################################
+################################################################
+# Перевірка роботи описаних класів.
+# if __name__ == '__main__':
+#     # Ініціалізація turtle
+#     home()
+    #delay(2)
 
+    ###### Перевірка кола ############
+    # c = Circle(120, 120, 50, "blue")
+    # c.show()
+    # c.move(-30, -140)
+    # c.hide()
 
-class Trapeze(Figure):
-    # Рівнобічна трапеція. Позиція (x,y) - лівий нижній кут.
-    def __init__(self, x, y, base_bottom, base_top, height, color="black"):
-        super().__init__(x, y, color)
-        self.base_bottom = base_bottom
-        self.base_top = base_top
-        self.height = height
+    ###### Перевірка квадрата ############
+    # q = Quadrate(0, 0, 150, "red")
+    # q.show()
+    # q.move(0, 140)
+    # q.hide()
+    #
+    # ###### Перевірка трикутника ############
+    # t = Triangle(120, 120, 50, "blue")
+    # t.show()
+    # t.move(-30, -140)
+    # t.hide()
 
-    def _draw_shape(self):
-        turtle.penup()
-        turtle.goto(self.x, self.y)
-        turtle.pendown()
+    ###### Перевірка трапеції ############
+    # t = Trapezoid(120, 120, 50, 30, "green")
+    # t.show()
+    # t.move(-30, -140)
+    # t.hide()
 
-        # Обчислюємо зміщення верхньої основи відносно нижньої (оскільки трапеція рівнобічна)
-        offset = (self.base_bottom - self.base_top) / 2
-
-        turtle.begin_fill()
-        turtle.goto(self.x + self.base_bottom, self.y)  # Нижня основа
-        turtle.goto(self.x + self.base_bottom - offset, self.y + self.height)  # Права бокова сторона
-        turtle.goto(self.x + offset, self.y + self.height)  # Верхня основа
-        turtle.goto(self.x, self.y)  # Ліва бокова сторона
-        turtle.end_fill()
+    ###### Перевірка прямокутника ############
+    # t = Rectangle(120, 120, 50, 30, "red")
+    # t.show()
+    # t.move(-30, -140)
+    # t.hide()
+    #
+    # mainloop()
 
 
 # ==========================================
@@ -153,28 +254,24 @@ class Trapeze(Figure):
 # ==========================================
 
 class Car:
-    """
-    Клас, що демонструє Композицію.
-    Автомобіль складається з кількох фігур.
-    """
 
     def __init__(self, x, y):
-        # Ініціалізуємо складові частини автомобіля відносно його базової координати (x, y)
-        self.body = Rectangle(x, y + 20, 120, 40, "blue")  # Корпус
-        self.roof = Trapeze(x + 20, y + 60, 80, 40, 30, "lightblue")  # Дах з вікнами
-        self.wheel_front = Circle(x + 90, y + 20, 15, "black")  # Переднє колесо
-        self.wheel_back = Circle(x + 30, y + 20, 15, "black")  # Заднє колесо
+        self.body = Rectangle(x, y + 40, 200, 70, "red")
+        self.roof = Trapezoid(x + 40, y + 115, 120, 60, "lightblue")
+        self.wheel_front = Circle(x + 150, y + 40, 25, "black")
+        self.wheel_back = Circle(x + 50, y + 40, 25, "black")
 
-        # Зберігаємо всі частини у список для зручності
         self.parts = [self.body, self.roof, self.wheel_front, self.wheel_back]
 
-    def draw(self):
-        """Зображує весь автомобіль, малюючи кожну його частину"""
+    def show(self):  # ВИПРАВЛЕНО: перейменував з draw на show, щоб відповідати базовому класу Figure
         for part in self.parts:
-            part.draw()
+            part.show()  # ВИПРАВЛЕНО: викликаємо show() замість draw()
+
+    def hide(self):  # ДОДАНО: метод hide потрібен, щоб автомобіль міг "стиратися" при русі
+        for part in self.parts:
+            part.hide()
 
     def move(self, dx, dy):
-        """Переміщує автомобіль, викликаючи move() для кожної його частини"""
         for part in self.parts:
             part.move(dx, dy)
 
@@ -183,55 +280,31 @@ class Car:
 # ЧАСТИНА 4: ГОЛОВНА ПРОГРАМА (ВИКОНАННЯ)
 # ==========================================
 
+
 def main():
-    # Налаштування екрану turtle
-    screen = turtle.Screen()
-    screen.title("ООП Графіка: Наслідування, Поліморфізм та Композиція")
-    screen.setup(width=800, height=600)
+    title("ООП Графіка: Наслідування, Поліморфізм та Композиція")
+    setup(width=900, height=600)
 
-    # Вимикаємо анімацію малювання для швидкості (важливо для 100 фігур)
-    turtle.tracer(0)
-    turtle.hideturtle()
+    tracer(0)
+    hideturtle()
 
-    # 1. Створення та переміщення автомобіля
+    # ---------------------------------------------------------
+    # 1. Створення, відображення та переміщення автомобіля
+    # ---------------------------------------------------------
     print("Малюємо автомобіль...")
     my_car = Car(-300, 100)
-    my_car.draw()
-    turtle.update()  # Оновлюємо екран, бо tracer(0)
+    my_car.show()  # Тут використовується метод show(), який ми щойно виправили в класі Car
+    update()
 
     # Анімація переміщення автомобіля (зміщуємо його 50 разів праворуч)
-    import time
-    for _ in range(50):
-        my_car.move(5, 0)
-        turtle.update()
-        time.sleep(0.05)
+    print("Автомобіль поїхав...")
+    for _ in range(500):
+        my_car.move(2, 0)
+        update()
+        time.sleep(0.001)
 
-    # 2. Малювання 100 випадкових фігур
-    print("Малюємо 100 випадкових фігур...")
-    colors = ["red", "green", "yellow", "purple", "orange", "cyan", "magenta"]
-
-    for _ in range(100):
-        shape_type = random.randint(1, 5)  # Випадково обираємо тип фігури
-        x = random.randint(-350, 350)
-        y = random.randint(-250, 250)
-        color = random.choice(colors)
-
-        if shape_type == 1:
-            fig = Circle(x, y, random.randint(10, 40), color)
-        elif shape_type == 2:
-            fig = Triangle(x, y, random.randint(20, 60), color)
-        elif shape_type == 3:
-            fig = Rectangle(x, y, random.randint(30, 80), random.randint(20, 50), color)
-        elif shape_type == 4:
-            fig = Square(x, y, random.randint(20, 60), color)
-        else:
-            fig = Trapeze(x, y, random.randint(50, 80), random.randint(20, 40), random.randint(20, 50), color)
-
-        fig.draw()
-
-    turtle.update()  # Показуємо всі намальовані фігури
     print("Готово! Закрийте вікно, щоб вийти.")
-    turtle.done()
+    done()
 
 
 if __name__ == "__main__":
